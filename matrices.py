@@ -20,6 +20,8 @@ w5 = 1
 
 W = np.matrix([[0, w1, w2, 0, 0], [w1, 0, w3, w4, 0], [w2, w3, 0, 0, 0], [0, w4, 0, 0, w5], [0, 0, 0, w5, 0]])
 
+N = W.shape[0]
+
 def diagonal(W):
     """Make a diagonal matrix D from W. 
     Each diagonal entry is formed by sum of components of W of the corresponding row. 
@@ -36,8 +38,13 @@ def diagonal(W):
 D = diagonal(W)
 
 Q = np.subtract(D,W)
-#print(Q)
-#print(np.linalg.eigvalsh(Q))
 
-Test = np.matrix([[2,-1,-1],[-1,2,-1],[-1,-1,2]])
-print(np.linalg.eigvalsh(Test))
+
+
+# See description of numpy.linalg.eigh for details about what is returned exactly
+w,v = np.linalg.eigh(Q)
+w = w[1:N]
+v = v[:,1:N]
+one = np.matmul(v[:,0].transpose(), v[:,0])
+print(one)
+# print(v[:,0])
