@@ -35,16 +35,54 @@ def diagonal(W):
 
     return D
 
+def svd(Q, reduced=False, test=False):
+    """Gives the the spectral decomposition of matrix Q. If test=True, it will output the matrix
+    Q - v^T*diag(w)*v. If all the values are (close to) zero, the spectral decomposition has succeeded.
+    If reduced is true, it returns the v and w with the smallest eigenvalue and its corresponding 
+    eigenvector left out.  
+    Output: 
+    w : the eigenvalues in ascending order
+    v : matrix of eigenvectors. column v[:, i] is the normalized eigenvector corresponding to eigenvalue w[i]"""
+
+    # See description of numpy.linalg.eigh for details about what is returned exactly
+    w,v = np.linalg.eigh(Q)
+    N = len(w)
+
+    if test == True:
+
+        # Create matrix with eigenvalues on the diagonal. 
+        eigv = np.zeros((N, N))
+        for i in range(N):
+            eigv[i][i] = w[i]
+        
+        Q2 = np.linalg.multi_dot([v, eigv, v.transpose()])
+        Q4 = np.subtract(Q,Q2)
+        print('Matrix Q minus v * w * v^T should be (approaching) the zero matrix, which is:', Q4 )
+
+    if reduced == True:
+        eigv = w[1:N]
+        w = eigv
+        v = v[:,1:N]  # +1 because the new w is reduced
+
+    return w,v
+
+def inverse(w,v):
+    """Returns the inverse of a matrix, based on its reduced eigenvectors and eigenvalues."""
+
+    w_recip = np.reciprocal(w)
+    N = len(w_recip)
+    w_inv = np.zeros((N,N))
+    for i in range(N):
+        w_inv[i][i] = w_recip[i] 
+    
+    Qinv = np.linalg.multi_dot([v, w_inv, v.transpose()])
+
+    return Qinv
+
 D = diagonal(W)
 
 Q = np.subtract(D,W)
 
+w,v = svd(Q,reduced=True,test=False)
+Qinv = inverse(w,v)
 
-
-# See description of numpy.linalg.eigh for details about what is returned exactly
-w,v = np.linalg.eigh(Q)
-w = w[1:N]
-v = v[:,1:N]
-one = np.matmul(v[:,0].transpose(), v[:,0])
-print(one)
-# print(v[:,0])
