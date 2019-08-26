@@ -19,7 +19,10 @@ w4 = 1
 w5 = 1
 
 W = np.matrix([[0, w1, w2, 0, 0], [w1, 0, w3, w4, 0], [w2, w3, 0, 0, 0], [0, w4, 0, 0, w5], [0, 0, 0, w5, 0]])
-
+# NxL weighted incidence matrix
+B = np.matrix([[w1, w2, 0, 0, 0], [-w1, 0, -w3, w4, 0], [0, -w2, w3, 0, 0], [0, 0, 0, -w4, w5], [0, 0, 0, 0, -w5]])
+# Power input per node
+P = np.matrix([[2], [1], [0], [0], [0]])
 N = W.shape[0]
 
 def diagonal(W):
@@ -83,6 +86,10 @@ D = diagonal(W)
 
 Q = np.subtract(D,W)
 
+# Pseudo inverse of the laplacian, when reduced=True
 w,v = svd(Q,reduced=True,test=False)
 Qinv = inverse(w,v)
 
+#Flow in the graph per link
+F = np.linalg.multi_dot([B,Qinv,P])
+print(F)
