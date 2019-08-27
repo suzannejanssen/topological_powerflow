@@ -22,7 +22,7 @@ W = np.matrix([[0, w1, w2, 0, 0], [w1, 0, w3, w4, 0], [w2, w3, 0, 0, 0], [0, w4,
 # NxL weighted incidence matrix
 B = np.matrix([[w1, w2, 0, 0, 0], [-w1, 0, -w3, w4, 0], [0, -w2, w3, 0, 0], [0, 0, 0, -w4, w5], [0, 0, 0, 0, -w5]])
 # Power input per node
-P = np.matrix([[2], [1], [0], [0], [0]])
+P = np.matrix([[2], [1], [0], [-1.5], [-1.5]])
 N = W.shape[0]
 
 def diagonal(W):
@@ -82,14 +82,51 @@ def inverse(w,v):
 
     return Qinv
 
+def e(size, index):
+    """Returns the base vector. 
+    ------------
+    size : length of the base vector
+    index : index at which base vector contains a one, note: index starts from 0 in python """
+    arr = np.zeros(size)
+    arr[index] = 1.0
+
+    return arr
+
 D = diagonal(W)
 
 Q = np.subtract(D,W)
+
+#Pseudoinverse function
+Qpinv = np.linalg.pinv(Q, rcond=1e-10)
 
 # Pseudo inverse of the laplacian, when reduced=True
 w,v = svd(Q,reduced=True,test=False)
 Qinv = inverse(w,v)
 
 #Flow in the graph per link
-F = np.linalg.multi_dot([B,Qinv,P])
-print(F)
+F = np.linalg.multi_dot([B.transpose(),Qinv,P])
+#print(A)
+#print(np.where(A==0)[0], np.where(A==0)[1])
+
+def get_nodes_newlines(A):
+    """From adjacency matrix A, it finds the nodes between which there exists no line.
+    Returns the row and column coordinates separately. 
+    -----------
+    A : adjacency matrix of a graph"""
+
+    N = A.shape[0]
+
+    #Create all ones matrix
+    ones = np.ones((N,N))
+    #Make it an upper triangular matrix excluding diagonal
+    uptr_ones = np.triu(ones, k=1)
+    #Make it a lower triangular matrix including diagonal
+    lowtr_ones = np.tril(ones, k=0)
+    #Multiply A by upper triangular matrix, to only get usefull information. 
+    #Add with lower triangular matrix, in order to only find necessary zero entries. 
+    coord_matrix = np.add(np.multiply(A,uptr_ones), lowtr_ones) 
+    row_coord = np.where(coord_matrix==0)[0]
+    col_coord = np.where(coord_matrix==0)[1]
+
+    return row_coord,col_coord
+
