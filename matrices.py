@@ -96,8 +96,8 @@ D = diagonal(W)
 
 Q = np.subtract(D,W)
 
-#Pseudoinverse function
-Qpinv = np.linalg.pinv(Q, rcond=1e-10)
+# #Pseudoinverse function for checking
+# Qpinv = np.linalg.pinv(Q, rcond=1e-10)
 
 # Pseudo inverse of the laplacian, when reduced=True
 w,v = svd(Q,reduced=True,test=False)
@@ -130,3 +130,20 @@ def get_nodes_newlines(A):
 
     return row_coord,col_coord
 
+def omega(Qinv): 
+    """Get Omega from the pseudoinverse. 
+    Omega = z*u^T + u*z^T - 2*Qinv
+    --------------
+    Qinv : the pseudoinverse"""
+    
+    N = Qinv.shape[0]
+    z = np.zeros(5)
+
+print(Qinv[0][0])
+# N = Qinv.shape[0]
+# z = np.zeros(N)
+# for i in range(N):
+#     z[i] = Qinv[i][i]
+
+# print(z)
+# print(z.shape)
