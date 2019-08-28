@@ -137,13 +137,13 @@ def omega(Qinv):
     Qinv : the pseudoinverse"""
     
     N = Qinv.shape[0]
-    z = np.zeros(5)
+    z = np.zeros((N,1))
+    for i in range(N):
+        z[i] = Qinv.item((i,i))
+    
+    u = np.ones((N,1))
 
-print(Qinv[0][0])
-# N = Qinv.shape[0]
-# z = np.zeros(N)
-# for i in range(N):
-#     z[i] = Qinv[i][i]
+    omega1 = np.add(np.multiply(z, u.transpose()), np.multiply(u, z.transpose()))
+    omega = np.add(omega1, np.multiply(-2, Qinv))
 
-# print(z)
-# print(z.shape)
+    return omega
