@@ -17,6 +17,7 @@ w2 = 1
 w3 = 1
 w4 = 1
 w5 = 1
+w = 1
 
 W = np.matrix([[0, w1, w2, 0, 0], [w1, 0, w3, w4, 0], [w2, w3, 0, 0, 0], [0, w4, 0, 0, w5], [0, 0, 0, w5, 0]])
 # NxL weighted incidence matrix
@@ -69,7 +70,7 @@ def svd(Q, reduced=False, test=False):
 
     return w,v
 
-def inverse(w,v):
+def laplacian(w,v):
     """Returns the inverse of a matrix, based on its reduced eigenvectors and eigenvalues."""
 
     w_recip = np.reciprocal(w)
@@ -81,6 +82,25 @@ def inverse(w,v):
     Qinv = np.linalg.multi_dot([v, w_inv, v.transpose()])
 
     return Qinv
+
+def new_laplacian(i, j, Qinv, omega, w):
+    """New laplacian calculated for the link addition between node i and j. 
+    Returns the new laplacian. Q'inv
+    --------------------------
+    i : node from
+    j : node to
+    Qinv : old laplacian
+    omega : effective resistance matrix
+    w : weight of the added link"""
+
+    N = Q.shape[0]
+
+    e = np.subtract(e(N,i), e(N,j))
+    x = np.linalg.multi_dot([Qinv, e, e.transpose(), Qinv])
+    scale = w/(1+(omega.item(j,i)*w))
+    Qinv_new = np.subtract(Qinv, np.multiply(scale,x))
+
+    return Qinv_new
 
 def e(size, index):
     """Returns the base vector. 
@@ -101,7 +121,7 @@ Q = np.subtract(D,W)
 
 # Pseudo inverse of the laplacian, when reduced=True
 w,v = svd(Q,reduced=True,test=False)
-Qinv = inverse(w,v)
+Qinv = laplacian(w,v)
 
 #Flow in the graph per link
 F = np.linalg.multi_dot([B.transpose(),Qinv,P])
@@ -147,3 +167,6 @@ def omega(Qinv):
     omega = np.add(omega1, np.multiply(-2, Qinv))
 
     return omega
+
+Qnew = omega(Qinv)
+
