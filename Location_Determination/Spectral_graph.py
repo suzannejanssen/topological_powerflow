@@ -39,11 +39,14 @@ def diagonal(W):
     Each diagonal entry is formed by sum of components of W of the corresponding row. 
     Returns diagonal matrix D"""
 
-    rowsum = W.sum(axis=1)    #Axis is 1 to sum over the rows
-    D = np.zeros((W.shape[0], W.shape[0]))
+    # Axis is 1 to sum over the rows
+    rowsum = W.sum(axis=1)
 
-    for i in range(W.shape[0]):
-        D[i][i] = rowsum[i]
+    # squeeze to 1-D numpy array
+    rowsum = np.asarray(rowsum).squeeze()
+
+    # lay out over diagonal
+    D = np.diag(rowsum)
 
     return D
 
