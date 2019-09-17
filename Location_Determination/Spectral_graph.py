@@ -158,21 +158,22 @@ def get_nodes_newlines(A):
 
     return row_coord,col_coord
 
+
 def get_nodes_existlines(A):
     """From adjecency matrix A, find nodes between which there exists a line. So only unique ones, upper diagonal. """
 
-    N = A.shape[0]
+    # get upper triangles with ones
+    uptr_ones = np.tril(A, -1).T
 
-    #Create all ones matrix
-    ones = np.ones((N,N))
-    #Make it an upper triangular matrix, excluding diagonal
-    uptr_ones = np.triu(ones, k=1)
-    #Multiply A by upper triangular matrix to get useful information
+    # get boolean coordinates matrix
     coord_matrix = np.multiply(A, uptr_ones)
-    row_coord = np.where(coord_matrix==1)[0]
-    col_coord = np.where(coord_matrix==1)[1]
 
-    return row_coord, col_coord
+    # extract coordinates
+    coordinates = np.where(coord_matrix==1)
+
+    # return row & col coordinates
+    return coordinates[0], coordinates[1]
+
 
 def omega(Qinv): 
     """Get Omega from the pseudoinverse. 
