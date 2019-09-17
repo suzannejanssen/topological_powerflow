@@ -194,6 +194,8 @@ def omega(Qinv):
 
 omega = omega(Qinv)
 
+print(B[1][2])
+
 def delta_flow(omega, A, W, L):
     """Builts the deltaf matrix from figure 2.2 (thesis hale) considering f_ij is unity. """
     
@@ -201,20 +203,17 @@ def delta_flow(omega, A, W, L):
     row_coord, col_coord = get_nodes_newlines(A)
     
     deltaf = np.zeros((L, len(col_coord)))
-
-    for existing_line in range(len(exist_line_row)):
-        a = exist_line_row[existing_line]
-        b = exist_line_col[existing_line]
-        #print(a,b)
-
-        for new_line in range(len(col_coord)):
-            i = row_coord[new_line]
-            j = col_coord[new_line]
-
+    print(deltaf[1][2])
+    for new_line in range(len(col_coord)):
+        i = row_coord[new_line]
+        j = col_coord[new_line]
+        for existing_line in range(len(exist_line_row)):
+            a = exist_line_row[existing_line]
+            b = exist_line_col[existing_line]
             delta = (W.item(b,a) * (omega.item((i,a))-omega.item((j,a))+omega.item((j,b))-omega.item((i,b))))/2
             deltaf[b][a] = delta
 
     return deltaf
 
-delta_f = delta_flow(omega, A, W, L, row, col)
-print(delta_f)
+delta_f = delta_flow(omega, A, W, L)
+# print(delta_f)
