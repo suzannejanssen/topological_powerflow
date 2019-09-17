@@ -158,6 +158,22 @@ def get_nodes_newlines(A):
 
     return row_coord,col_coord
 
+def get_nodes_existlines(A):
+    """From adjecency matrix A, find nodes between which there exists a line. So only unique ones, upper diagonal. """
+
+    N = A.shape[0]
+
+    #Create all ones matrix
+    ones = np.ones((N,N))
+    #Make it an upper triangular matrix, excluding diagonal
+    uptr_ones = np.triu(ones, k=1)
+    #Multiply A by upper triangular matrix to get useful information
+    coord_matrix = np.multiply(A, uptr_ones)
+    row_coord = np.where(coord_matrix==1)[0]
+    col_coord = np.where(coord_matrix==1)[1]
+
+    return row_coord, col_coord
+
 def omega(Qinv): 
     """Get Omega from the pseudoinverse. 
     Omega = z*u^T + u*z^T - 2*Qinv
@@ -178,14 +194,12 @@ def omega(Qinv):
 
 omega = omega(Qinv)
 
-row, col = get_nodes_newlines(A)
-
-def delta_flow(omega, A, W, L, row_coord, col_coord):
+def delta_flow(omega, A, W, L):
     """Builts the deltaf matrix from figure 2.2 (thesis hale) considering f_ij is unity. """
     
-    exist_line_row = np.where(A==1)[0]
-    exist_line_col = np.where(A==1)[1]
-    print(exist_line_row, exist_line_col)
+    exist_line_row, exist_line_col = get_nodes_existlines(A)
+    row_coord, col_coord = get_nodes_newlines(A)
+    
     deltaf = np.zeros((L, len(col_coord)))
 
     for existing_line in range(len(exist_line_row)):
