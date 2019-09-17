@@ -3,7 +3,9 @@
 
 import numpy as np
 
-A = np.matrix([[0, 1, 1, 0, 0], [1, 0, 1, 1, 0], [1, 1, 0, 0, 0], [0, 1, 0, 0, 1], [0, 0, 0, 1, 0]])
+#A = np.matrix([[0, 1, 1, 0, 0], [1, 0, 1, 1, 0], [1, 1, 0, 0, 0], [0, 1, 0, 0, 1], [0, 0, 0, 1, 0]])
+#Hale's A matrix
+A = np.matrix([[0, 1, 0, 0, 0, 0], [1, 0, 1, 1, 1, 0], [0, 1, 0, 1, 0, 0], [0, 1, 1, 0, 0, 1], [0, 1, 0, 0, 0, 1], [0, 0, 0, 1, 1, 0]])
 
 # admittance of each lines (1/reactance), adjust if necessary
 # w1 = 1/2
@@ -12,19 +14,24 @@ A = np.matrix([[0, 1, 1, 0, 0], [1, 0, 1, 1, 0], [1, 1, 0, 0, 0], [0, 1, 0, 0, 1
 # w4 = 1/20
 # w5 = 1/0.5
 
-L=5 #number of links
+L=7 #number of links
 w1 = 1
 w2 = 1
 w3 = 1
 w4 = 1
 w5 = 1
+w6 = 1
+w7 = 1
 
-
-W = np.matrix([[0, w1, w2, 0, 0], [w1, 0, w3, w4, 0], [w2, w3, 0, 0, 0], [0, w4, 0, 0, w5], [0, 0, 0, w5, 0]])
+#W = np.matrix([[0, w1, w2, 0, 0], [w1, 0, w3, w4, 0], [w2, w3, 0, 0, 0], [0, w4, 0, 0, w5], [0, 0, 0, w5, 0]])
+#Hale's W matrix
+W = np.matrix([[0, w1, 0, 0, 0, 0], [w1, 0, w3, w4, w5, 0], [0, w2, 0, w5, 0, 0], [0, w3, w5, 0, 0, w6], [0, w4, 0, 0, 0, w7], [0, 0, 0, w6, w7, 0]])
 # NxL weighted incidence matrix
-B = np.matrix([[w1, w2, 0, 0, 0], [-w1, 0, -w3, w4, 0], [0, -w2, w3, 0, 0], [0, 0, 0, -w4, w5], [0, 0, 0, 0, -w5]])
+#B = np.matrix([[w1, w2, 0, 0, 0], [-w1, 0, -w3, w4, 0], [0, -w2, w3, 0, 0], [0, 0, 0, -w4, w5], [0, 0, 0, 0, -w5]])
+#Hale's B matrix
+B = np.matrix([[w1, 0, 0, 0, 0, 0, 0], [-w1, w2, w3, w4, 0, 0, 0], [0, -w2, 0, 0, w5, 0, 0], [0, 0, -w3, 0, -w5, w6, 0], [0, 0, 0, -w4, 0, 0, w7], [0, 0, 0, 0, 0, -w6, -w7]])
 # Power input per node
-P = np.matrix([[2], [1], [0], [-1.5], [-1.5]])
+P = np.matrix([[2], [1], [0], [-1.5], [-1.5], [0]])
 N = W.shape[0]
 
 def diagonal(W):
@@ -178,7 +185,7 @@ def delta_flow(omega, A, W, L, row_coord, col_coord):
     
     exist_line_row = np.where(A==1)[0]
     exist_line_col = np.where(A==1)[1]
-
+    print(exist_line_row, exist_line_col)
     deltaf = np.zeros((L, len(col_coord)))
 
     for existing_line in range(len(exist_line_row)):
