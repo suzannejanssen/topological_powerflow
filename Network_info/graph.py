@@ -2,9 +2,8 @@ import numpy as np
 
 
 def run(graph1=False):
-
-    if graph1 == True:
-        A,W,B = graph1()
+ 
+    A,W,B = graph()
     # elif graph == graph2:
     #     G = graph2()
     # elif graph == graph3:
@@ -14,7 +13,7 @@ def run(graph1=False):
     
     return A,W,B
 
-def graph1():
+def graph():
     A = np.matrix([[0, 1, 1, 0, 0], [1, 0, 1, 1, 0], [1, 1, 0, 0, 0], [0, 1, 0, 0, 1], [0, 0, 0, 1, 0]])
     w1 = 1
     w2 = 1

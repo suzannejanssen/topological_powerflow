@@ -12,12 +12,13 @@ A = np.matrix([[0, 1, 1, 0, 0], [1, 0, 1, 1, 0], [1, 1, 0, 0, 0], [0, 1, 0, 0, 1
 # w4 = 1/20
 # w5 = 1/0.5
 
+L=5 #number of links
 w1 = 1
 w2 = 1
 w3 = 1
 w4 = 1
 w5 = 1
-w = 1
+
 
 W = np.matrix([[0, w1, w2, 0, 0], [w1, 0, w3, w4, 0], [w2, w3, 0, 0, 0], [0, w4, 0, 0, w5], [0, 0, 0, w5, 0]])
 # NxL weighted incidence matrix
@@ -126,7 +127,7 @@ Qinv = laplacian(w,v)
 #Flow in the graph per link
 F = np.linalg.multi_dot([B.transpose(),Qinv,P])
 #print(A)
-#print(np.where(A==0)[0], np.where(A==0)[1])
+# print(np.where(A==0)[0], np.where(A==0)[1])
 
 def get_nodes_newlines(A):
     """From adjacency matrix A, it finds the nodes between which there exists no line.
@@ -168,5 +169,31 @@ def omega(Qinv):
 
     return omega
 
-Qnew = omega(Qinv)
+omega = omega(Qinv)
 
+row, col = get_nodes_newlines(A)
+
+def delta_flow(omega, A, W, L, row_coord, col_coord):
+    """Builts the deltaf matrix from figure 2.2 (thesis hale) considering f_ij is unity. """
+    
+    exist_line_row = np.where(A==1)[0]
+    exist_line_col = np.where(A==1)[1]
+
+    deltaf = np.zeros((L, len(col_coord)))
+
+    for existing_line in range(len(exist_line_row)):
+        a = exist_line_row[existing_line]
+        b = exist_line_col[existing_line]
+        #print(a,b)
+
+        for new_line in range(len(col_coord)):
+            i = row_coord[new_line]
+            j = col_coord[new_line]
+
+            delta = (W.item(b,a) * (omega.item((i,a))-omega.item((j,a))+omega.item((j,b))-omega.item((i,b))))/2
+            deltaf[b][a] = delta
+
+    return deltaf
+
+delta_f = delta_flow(omega, A, W, L, row, col)
+print(delta_f)
