@@ -162,24 +162,24 @@ def get_nodes_lines(A, exist=True):
     return coordinates
 
 
-def omega(Qinv): 
+def omega(Qinv : np.matrix): 
     """Get Omega from the pseudoinverse. 
     Omega = z*u^T + u*z^T - 2*Qinv
     --------------
     Qinv : the pseudoinverse"""
-    
-    N = Qinv.shape[0]
-    z = np.zeros((N,1))
-    for i in range(N):
-        z[i] = Qinv.item((i,i))
-    
-    u = np.ones((N,1))
 
-    omega1 = np.add(np.multiply(z, u.transpose()), np.multiply(u, z.transpose()))
-    omega = np.add(omega1, np.multiply(-2, Qinv))
+    # make sure the input is an np.matrix class
+    assert isinstance(Qinv, np.matrix)
+
+    # get z & u
+    z = np.matrix(np.diag(Qinv)).T
+    u = np.matrix(np.ones(z.shape))
+
+    # calculate omega
+    omega = z * u.T + u * z.T - 2 * Qinv
 
     return omega
-    
+
 
 def delta_flow(omega, A, W, L):
     """Builts the deltaf matrix from figure 2.2 (thesis hale) considering f_ij is unity. """
