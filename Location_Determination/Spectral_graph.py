@@ -202,5 +202,6 @@ def delta_flow(omega, A, W, L):
     return deltaf
 
 delta_f = delta_flow(omega, A, W, L)
-print(delta_f)
 
+np.set_printoptions(suppress=True, precision=4)
+print(delta_f)
