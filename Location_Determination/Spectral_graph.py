@@ -39,11 +39,14 @@ def diagonal(W):
     Each diagonal entry is formed by sum of components of W of the corresponding row. 
     Returns diagonal matrix D"""
 
-    rowsum = W.sum(axis=1)    #Axis is 1 to sum over the rows
-    D = np.zeros((W.shape[0], W.shape[0]))
+    # Axis is 1 to sum over the rows
+    rowsum = W.sum(axis=1)
 
-    for i in range(W.shape[0]):
-        D[i][i] = rowsum[i]
+    # squeeze to 1-D numpy array
+    rowsum = np.asarray(rowsum).squeeze()
+
+    # lay out over diagonal
+    D = np.diag(rowsum)
 
     return D
 
@@ -136,92 +139,68 @@ F = np.linalg.multi_dot([B.transpose(),Qinv,P])
 #print(A)
 # print(np.where(A==0)[0], np.where(A==0)[1])
 
-def get_nodes_newlines(A):
-    """From adjacency matrix A, it finds the nodes between which there exists no line.
-    Returns the row and column coordinates separately. 
+
+def get_nodes_lines(A, exist=True):
+    """From adjacency matrix A, it finds the nodes between which there exists or does not exists a line.
+    Returns the coordinates in a list of tuples. 
     -----------
-    A : adjacency matrix of a graph"""
+    A : adjacency matrix of a graph
+    """
+    if not exist:
+        A = -(A - 1)
 
-    N = A.shape[0]
+    # get upper triangles with ones
+    uptr_ones = np.tril(A, -1).T
 
-    #Create all ones matrix
-    ones = np.ones((N,N))
-    #Make it an upper triangular matrix excluding diagonal
-    uptr_ones = np.triu(ones, k=1)
-    #Make it a lower triangular matrix including diagonal
-    lowtr_ones = np.tril(ones, k=0)
-    #Multiply A by upper triangular matrix, to only get usefull information. 
-    #Add with lower triangular matrix, in order to only find necessary zero entries. 
-    coord_matrix = np.add(np.multiply(A,uptr_ones), lowtr_ones) 
-    row_coord = np.where(coord_matrix==0)[0]
-    col_coord = np.where(coord_matrix==0)[1]
-
-    return row_coord,col_coord
-
-def get_nodes_existlines(A):
-    """From adjecency matrix A, find nodes between which there exists a line. So only unique ones, upper diagonal. """
-
-    N = A.shape[0]
-
-    #Create all ones matrix
-    ones = np.ones((N,N))
-    #Make it an upper triangular matrix, excluding diagonal
-    uptr_ones = np.triu(ones, k=1)
-    #Multiply A by upper triangular matrix to get useful information
+    # get boolean coordinates matrix
     coord_matrix = np.multiply(A, uptr_ones)
-    row_coord = np.where(coord_matrix==1)[0]
-    col_coord = np.where(coord_matrix==1)[1]
 
-    return row_coord, col_coord
+    # extract coordinates and rezip to list of coordinates
+    coordinates = np.where(coord_matrix==1)
+    coordinates = list(zip(*coordinates))
 
-def omega(Qinv): 
+    return coordinates
+
+
+def omega(Qinv : np.matrix): 
     """Get Omega from the pseudoinverse. 
     Omega = z*u^T + u*z^T - 2*Qinv
     --------------
     Qinv : the pseudoinverse"""
-    
-    N = Qinv.shape[0]
-    z = np.zeros((N,1))
-    for i in range(N):
-        z[i] = Qinv.item((i,i))
-    
-    u = np.ones((N,1))
 
-    omega1 = np.add(np.multiply(z, u.transpose()), np.multiply(u, z.transpose()))
-    omega = np.add(omega1, np.multiply(-2, Qinv))
+    # make sure the input is an np.matrix class
+    assert isinstance(Qinv, np.matrix)
+
+    # get z & u
+    z = np.matrix(np.diag(Qinv)).T
+    u = np.matrix(np.ones(z.shape))
+
+    # calculate omega
+    omega = z * u.T + u * z.T - 2 * Qinv
 
     return omega
 
-omega = omega(Qinv)
 
 def delta_flow(omega, A, W, L):
     """Builts the deltaf matrix from figure 2.2 (thesis hale) considering f_ij is unity. """
-    
-    exist_line_row, exist_line_col = get_nodes_existlines(A)
-    #row_coord, col_coord = get_nodes_newlines(A)
-    row_coord = [0, 0, 0, 1, 2, 2, 2]
-    col_coord = [1, 4, 5, 5, 3, 4, 5]
-    
-    deltaf = np.zeros((len(col_coord),len(exist_line_col)))
-    x = 0
-    for new_line in range(len(col_coord)):
-        y = 0
-        i = row_coord[new_line]
-        j = col_coord[new_line]
-        
-        for existing_line in range(len(exist_line_row)):
-            a = exist_line_row[existing_line]
-            b = exist_line_col[existing_line]
-            
+    new_row_coord = [0, 0, 0, 1, 2, 2, 2]
+    new_col_coord = [1, 4, 5, 5, 3, 4, 5]
+
+    new_line_coordinates = list(zip(new_row_coord, new_col_coord))
+    # new_line_coordinates = get_nodes_lines(A, exist=False)
+    exist_line_coordinates = get_nodes_lines(A, exist=True)
+
+    omega = omega(Qinv)
+    deltaf = np.zeros((len(new_line_coordinates), len(exist_line_coordinates)))
+
+    for x, (i, j) in enumerate(new_line_coordinates):
+        for y, (a, b) in enumerate(exist_line_coordinates):
             delta = (W[b,a] * (omega[i,a]-omega[j,a]+omega[j,b]-omega[i,b]))/2
-            print(x,y)
             deltaf[x,y] = delta
-            y+=1
-        x+=1
-            
 
     return deltaf
 
 delta_f = delta_flow(omega, A, W, L)
-print(delta_f)
 
+np.set_printoptions(suppress=True, precision=4)
+print(delta_f)
